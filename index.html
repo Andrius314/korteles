@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="lt"> {/* Pakeista kalba į lt */}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuolaidų Kortelės - Galerija</title>
+    <style>
+        /* Visas CSS kodas čia */
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1.page-title {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+        }
+
+        .gallery-item {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+            cursor: pointer;
+            background-color: #fff; /* Pridėta, kad būtų baltas fonas jei paveikslėlis turi permatomų dalių */
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        /* Focus style for accessibility */
+        .gallery-item:focus {
+            outline: 2px solid #0056b3;
+            outline-offset: 2px;
+        }
+
+        .gallery-item img {
+            display: block;
+            width: 100%;
+            height: auto; /* Arba galite nustatyti fiksuotą aukštį ir object-fit: cover; jei norite vienodo aukščio */
+            /* height: 160px; */
+            /* object-fit: cover; */
+        }
+
+        /* Lightbox styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Padaryta šiek tiek tamsesnė */
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow: auto; /* Jei nuotrauka didelė */
+        }
+
+        .lightbox-content {
+            display: flex;
+            flex-direction: column;
+            max-width: 90%;
+            max-height: 90%;
+            margin: auto;
+            position: relative; /* Reikalinga close mygtuko pozicionavimui */
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            /* Galima pridėti animaciją atsiradimui */
+            animation: lightboxFadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes lightboxFadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+
+        .lightbox-close {
+            color: white;
+            position: absolute;
+            top: -10px;  /* Pakelta šiek tiek aukščiau */
+            right: -5px; /* Pastumta šiek tiek į dešinę */
+            font-size: 35px; /* Padidintas */
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            padding: 5px;
+            background-color: rgba(0,0,0,0.3); /* Pridėtas fonas geresniam matomumui */
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .lightbox-close:hover {
+            color: #ddd;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .lightbox-close:focus {
+             outline: 2px solid white;
+             outline-offset: 1px;
+        }
+
+        @media (max-width: 600px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Sumažinta minimali kortelė */
+                gap: 10px; /* Sumažintas tarpas */
+                padding: 10px; /* Sumažintas padding */
+            }
+             h1.page-title {
+                font-size: 1.8em;
+            }
+            .lightbox-close {
+                 top: 10px; /* Koreguota pozicija mažam ekranui */
+                 right: 15px;
+                 font-size: 30px;
+                 width: 30px;
+                 height: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="page-title">Nuolaidų Kortelės</h1>
+
+    <div class="gallery">
+        <div class="gallery-item" tabindex="0" role="button">
+            <img src="img/iki.jpg" alt="IKI nuolaidų kortelė">
+        </div>
+        <div class="gallery-item" tabindex="0" role="button">
+            <img src="img/maxima.jpg" alt="Maxima Ačiū kortelė">
+        </div>
+        <div class="gallery-item" tabindex="0" role="button">
+            <img src="img/lidl.jpg" alt="Lidl Plus kortelė (iliustracija)">
+        </div>
+        <div class="gallery-item" tabindex="0" role="button">
+            <img src="img/norfa.jpg" alt="Norfa nuolaidų kortelė">
+        </div>
+        <div class="gallery-item" tabindex="0" role="button">
+            <img src="img/promo.jpg" alt="Promo Cash&Carry kortelė">
+        </div>
+        <!-- PRIDĖTAS SENUKŲ ELEMENTAS -->
+        <div class="gallery-item" tabindex="0" role="button">
+            <!-- Įsitikinkite, kad turite img/senukai.jpg failą -->
+            <img src="img/senukai.jpg" alt="Senukai Mylimiausia kortelė">
+        </div>
+        <!-- Čia galite pridėti daugiau .gallery-item elementų -->
+    </div>
+
+    <!-- Lightbox container -->
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close" title="Uždaryti">×</span>
+        <div class="lightbox-content">
+            <img id="lightbox-img" class="lightbox-image" src="" alt="">
+        </div>
+    </div>
+
+    <script>
+        // Visas JavaScript kodas čia
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxContent = document.querySelector('.lightbox-content');
+        const lightboxClose = document.querySelector('.lightbox-close');
+        const galleryItems = document.querySelectorAll('.gallery-item');
+
+        function openLightbox(imgSrc, altText) {
+            lightboxImg.src = imgSrc;
+            lightboxImg.alt = altText; // Perduodamas alt tekstas į lightbox paveikslėlį
+            lightbox.style.display = 'flex';
+            // Nustatomas focus uždarymo mygtukui geresniam prieinamumui
+            lightboxClose.focus();
+        }
+
+        function closeLightbox() {
+            lightbox.style.display = 'none';
+            lightboxImg.src = ""; // Išvaloma src, kad nerodytų senos nuotraukos trumpam
+            lightboxImg.alt = "";
+        }
+
+        // Kiekvienam galerijos elementui priskiriamas paspaudimo klausytojas
+        galleryItems.forEach(item => {
+            item.addEventListener('click', (event) => {
+                // Randamas paveikslėlis paspausto elemento viduje
+                const img = event.currentTarget.querySelector('img');
+                if (img) {
+                    openLightbox(img.src, img.alt); // Naudojam img.alt iš HTML
+                }
+            });
+
+            // Pridedamas klaviatūros klausytojas (Enter/Space) prieinamumui
+            item.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault(); // Neleidžia puslapiui slinkti paspaudus Space
+                    const img = event.currentTarget.querySelector('img');
+                    if (img) {
+                        openLightbox(img.src, img.alt); // Naudojam img.alt iš HTML
+                    }
+                }
+            });
+        });
+
+        // Klausytojas uždaryti lightbox paspaudus ant fono
+        lightbox.addEventListener('click', function(event) {
+            // Uždaro tik jei paspausta tiesiai ant fono (lightbox elemento)
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        // Klausytojas uždarymo mygtukui
+         lightboxClose.addEventListener('click', function(event) {
+             event.stopPropagation(); // Sustabdo evento plitimą, kad nepaspaustų fono
+             closeLightbox();
+         });
+
+        // Sustabdo evento plitimą paspaudus ant turinio (paveikslėlio), kad neuždarytų lightbox
+        lightboxContent.addEventListener('click', function(event) {
+             event.stopPropagation();
+        });
+
+        // Pridedamas ESC klavišo klausytojas uždaryti lightbox
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && lightbox.style.display === 'flex') {
+                closeLightbox();
+            }
+        });
+
+    </script>
+</body>
+</html>
