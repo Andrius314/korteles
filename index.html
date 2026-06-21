@@ -1,255 +1,475 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="lt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuolaidų Kortelės - Galerija</title>
-    <style>
-        /* CSS kodas lieka toks pat kaip anksčiau */
-        body {
-            font-family: sans-serif;
-            margin: 0;
-            background-color: #f4f4f4;
-        }
-        h1.page-title {
-            text-align: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Sumažintas min plotis logotipams */
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto 20px auto;
-        }
-        .gallery-item {
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out;
-            cursor: pointer;
-            background-color: #fff;
-            /* Galima pridėti aspect-ratio, kad logotipai būtų vienodesni */
-            aspect-ratio: 3 / 2; /* Plotis 3, aukštis 2 - parinkite pagal savo logotipus */
-            display: flex; /* Kad paveikslėlis centre būtų */
-            justify-content: center;
-            align-items: center;
-        }
-        .gallery-item:hover {
-            transform: scale(1.05);
-        }
-        .gallery-item:focus {
-            outline: 2px solid #0056b3;
-            outline-offset: 2px;
-        }
-        .gallery-item img {
-            display: block;
-            /* Pakeista, kad logotipai tilptų, bet neišsikraipytų */
-            max-width: 80%;
-            max-height: 80%;
-            width: auto;
-            height: auto;
-            object-fit: contain; /* Išlaiko proporcijas tilpdamas */
-        }
-        /* Lightbox styles */
-        .lightbox {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            overflow: auto;
-        }
-        .lightbox-content {
-            display: flex;
-            flex-direction: column;
-            max-width: 90%;
-            max-height: 90%;
-            margin: auto;
-            position: relative;
-        }
-        .lightbox-image {
-            max-width: 100%;
-            max-height: 100%;
-            display: block;
-            animation: lightboxFadeIn 0.3s ease-in-out;
-        }
-        @keyframes lightboxFadeIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .lightbox-close {
-            color: white;
-            position: absolute;
-            top: -10px;
-            right: -5px;
-            font-size: 35px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 1;
-            padding: 5px;
-            background-color: rgba(0,0,0,0.3);
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-        .lightbox-close:hover {
-            color: #ddd;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .lightbox-close:focus {
-             outline: 2px solid white;
-             outline-offset: 1px;
-        }
-        @media (max-width: 600px) {
-            .gallery {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Dar mažesnis min plotis */
-                gap: 10px;
-                padding: 10px;
-            }
-             h1.page-title {
-                font-size: 1.8em;
-            }
-            .lightbox-close {
-                 top: 10px;
-                 right: 15px;
-                 font-size: 30px;
-                 width: 30px;
-                 height: 30px;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="Nuolaidų kortelės vienoje vietoje, pasiekiamos ir be interneto.">
+  <title>Nuolaidų kortelės</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, .12), transparent 34rem),
+        #f3f4f6;
+    }
+
+    body.is-locked { overflow: hidden; }
+
+    header {
+      padding: 38px 20px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      letter-spacing: -.04em;
+    }
+
+    .subtitle {
+      margin: 10px auto 0;
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 18px;
+      width: min(100% - 32px, 1050px);
+      margin: 18px auto 48px;
+    }
+
+    .card {
+      min-height: 150px;
+      padding: 14px;
+      border: 1px solid rgba(17, 24, 39, .08);
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(17, 24, 39, .08);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(37, 99, 235, .28);
+      box-shadow: 0 14px 34px rgba(17, 24, 39, .13);
+    }
+
+    .card-open:focus-visible,
+    .status-toggle:focus-visible,
+    .close:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: 3px;
+    }
+
+    .card-open {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .card-open img {
+      display: block;
+      width: 100%;
+      height: 106px;
+      object-fit: contain;
+      transition: filter .18s ease, opacity .18s ease;
+    }
+
+    .card.is-inactive {
+      border-color: rgba(220, 38, 38, .3);
+    }
+
+    .card.is-inactive .card-open img {
+      filter: grayscale(.85);
+      opacity: .62;
+    }
+
+    .status-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      margin-top: 7px;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 10px;
+      background: #dcfce7;
+      color: #166534;
+      font: inherit;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .status-toggle::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #16a34a;
+      content: '';
+    }
+
+    .card.is-inactive .status-toggle {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .card.is-inactive .status-toggle::before {
+      background: #dc2626;
+    }
+
+    .lightbox[hidden] { display: none; }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(3, 7, 18, .86);
+      backdrop-filter: blur(5px);
+      animation: fade-in .16s ease-out;
+    }
+
+    .dialog {
+      position: relative;
+      width: min(94vw, 850px);
+      max-height: 90vh;
+      padding: 20px;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
+    }
+
+    .dialog img {
+      display: block;
+      width: 100%;
+      max-height: calc(90vh - 40px);
+      object-fit: contain;
+      border-radius: 10px;
+    }
+
+    .close {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #111827;
+      color: #fff;
+      font-size: 1.7rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .connection-status {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 20;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: #111827;
+      color: #fff;
+      font-size: .85rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .connection-status[hidden] { display: none; }
+
+    @keyframes fade-in { from { opacity: 0; } }
+
+    @media (max-width: 600px) {
+      header { padding-top: 28px; }
+      .gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        width: min(100% - 24px, 1050px);
+      }
+      .card { min-height: 125px; padding: 10px; border-radius: 14px; }
+      .card-open { padding: 4px; }
+      .card-open img { height: 88px; }
+      .dialog { padding: 12px; }
+      .close { top: -12px; right: -8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>Nuolaidų kortelės</h1>
+    <p class="subtitle">Paspauskite logotipą, kad parodytumėte kortelę.</p>
+  </header>
 
-    <h1 class="page-title">Nuolaidų Kortelės</h1>
+  <main class="gallery" aria-label="Nuolaidų kortelių sąrašas">
+    <article class="card" data-card-id="iki">
+      <button class="card-open" type="button" data-card="img/iki.jpg" data-name="IKI nuolaidų kortelė">
+        <img src="img/iki_logo.png" alt="IKI" width="300" height="200">
+      </button>
+      <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
+    </article>
+    <article class="card" data-card-id="maxima">
+      <button class="card-open" type="button" data-card="img/maxima.jpg" data-name="Maxima Ačiū kortelė">
+        <img src="img/maxima_logo.png" alt="Maxima" width="300" height="200">
+      </button>
+      <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
+    </article>
+    <article class="card" data-card-id="lidl">
+      <button class="card-open" type="button" data-card="img/lidl.jpg" data-name="Lidl Plus kortelė">
+        <img src="img/lidl_logo.png" alt="Lidl" width="300" height="200">
+      </button>
+      <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
+    </article>
+    <article class="card" data-card-id="norfa">
+      <button class="card-open" type="button" data-card="img/norfa.jpg" data-name="Norfa nuolaidų kortelė">
+        <img src="img/norfa_logo.png" alt="Norfa" width="300" height="200">
+      </button>
+      <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
+    </article>
+    <article class="card" data-card-id="promo">
+      <button class="card-open" type="button" data-card="img/promo.jpg" data-name="Promo Cash&amp;Carry kortelė">
+        <img src="img/promo_logo.png" alt="Promo Cash&amp;Carry" width="300" height="200">
+      </button>
+      <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
+    </article>
+    <article class="card" data-card-id="senukai">
+      <button class="card-open" type="button" data-card="img/senukai.jpg" data-name="Senukai Smart Net kortelė">
+        <img src="img/senukai_logo.png" alt="Senukai" width="300" height="200">
+      </button>
+      <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
+    </article>
+  </main>
 
-    <div class="gallery">
-        <!-- Atkreipkite dėmesį į src, alt, data-lightbox-src ir data-lightbox-alt -->
-        <div class="gallery-item" tabindex="0" role="button">
-            <img src="img/iki_logo.png" alt="IKI parduotuvės logotipas"
-                 data-lightbox-src="img/iki.jpg"
-                 data-lightbox-alt="IKI nuolaidų kortelė">
-        </div>
-        <div class="gallery-item" tabindex="0" role="button">
-            <img src="img/maxima_logo.png" alt="Maxima parduotuvės logotipas"
-                 data-lightbox-src="img/maxima.jpg"
-                 data-lightbox-alt="Maxima Ačiū kortelė">
-        </div>
-        <div class="gallery-item" tabindex="0" role="button">
-            <img src="img/lidl_logo.png" alt="Lidl parduotuvės logotipas"
-                 data-lightbox-src="img/lidl.jpg"
-                 data-lightbox-alt="Lidl Plus kortelė (iliustracija)">
-        </div>
-        <div class="gallery-item" tabindex="0" role="button">
-            <img src="img/norfa_logo.png" alt="Norfa parduotuvės logotipas"
-                 data-lightbox-src="img/norfa.jpg"
-                 data-lightbox-alt="Norfa nuolaidų kortelė">
-        </div>
-        <div class="gallery-item" tabindex="0" role="button">
-            <img src="img/promo_logo.png" alt="Promo Cash&Carry logotipas"
-                 data-lightbox-src="img/promo.jpg"
-                 data-lightbox-alt="Promo Cash&Carry kortelė">
-        </div>
-        <div class="gallery-item" tabindex="0" role="button">
-            <img src="img/senukai_logo.png" alt="Senukai parduotuvės logotipas"
-                 data-lightbox-src="img/senukai.jpg"
-                 data-lightbox-alt="Senukai Mylimiausia kortelė">
-        </div>
-        <!-- Čia galite pridėti daugiau elementų pagal tą pačią struktūrą -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Nuolaidų kortelė" hidden>
+    <div class="dialog">
+      <button class="close" type="button" aria-label="Uždaryti">&times;</button>
+      <img id="card-image" src="" alt="">
     </div>
+  </div>
 
-    <!-- Lightbox container -->
-    <div id="lightbox" class="lightbox">
-        <span class="lightbox-close" title="Uždaryti">×</span>
-        <div class="lightbox-content">
-            <img id="lightbox-img" class="lightbox-image" src="" alt="">
-        </div>
-    </div>
+  <div class="connection-status" id="connection-status" role="status" aria-live="polite" hidden></div>
 
-    <script>
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img');
-        const lightboxContent = document.querySelector('.lightbox-content');
-        const lightboxClose = document.querySelector('.lightbox-close');
-        const galleryItems = document.querySelectorAll('.gallery-item');
+  <script>
+    const FIRESTORE_API_KEY = 'AIzaSyBqSIzIL1F7MZdbGVqqsvssh-G5BoI-xxM';
+    const FIRESTORE_DOCUMENT_PATH = 'projects/nuolaidu-korteles-314/databases/(default)/documents';
+    const FIRESTORE_DOCUMENTS_URL = `https://firestore.googleapis.com/v1/${FIRESTORE_DOCUMENT_PATH}`;
 
-        // openLightbox funkcija dabar priima SRC ir ALT lightbox paveikslėliui
-        function openLightbox(imgSrc, altText) {
-            lightboxImg.src = imgSrc;
-            lightboxImg.alt = altText;
-            lightbox.style.display = 'flex';
-            lightboxClose.focus();
+    const lightbox = document.querySelector('#lightbox');
+    const cardImage = document.querySelector('#card-image');
+    const closeButton = document.querySelector('.close');
+    const connectionStatus = document.querySelector('#connection-status');
+    let previouslyFocused = null;
+    let statusTimer = null;
+
+    const STATUS_STORAGE_KEY = 'nuolaidu-korteliu-busenos-v1';
+    const PENDING_STORAGE_KEY = 'nuolaidu-korteliu-laukiantys-pakeitimai-v1';
+
+    function loadStatuses() {
+      try {
+        return JSON.parse(localStorage.getItem(STATUS_STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveStatuses(statuses) {
+      try {
+        localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(statuses));
+      } catch {
+        // Kortelės toliau veiks, net jei naršyklė neleidžia saugoti nustatymų.
+      }
+    }
+
+    function loadPendingStatuses() {
+      try {
+        return JSON.parse(localStorage.getItem(PENDING_STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function savePendingStatuses(statuses) {
+      try {
+        localStorage.setItem(PENDING_STORAGE_KEY, JSON.stringify(statuses));
+      } catch {
+        // Puslapis ir toliau veiks, net jei naršyklė neleidžia saugoti nustatymų.
+      }
+    }
+
+    function applyStatus(card, working) {
+      const toggle = card.querySelector('.status-toggle');
+      const label = card.querySelector('.status-label');
+      const cardName = card.querySelector('.card-open img').alt;
+      card.dataset.working = String(working);
+      card.classList.toggle('is-inactive', !working);
+      label.textContent = working ? 'Veikia' : 'Neveikia';
+      toggle.setAttribute('aria-label', `${cardName}: ${working ? 'veikia' : 'neveikia'}. Paspauskite būsenai pakeisti.`);
+    }
+
+    function openCard(button) {
+      previouslyFocused = button;
+      cardImage.src = button.dataset.card;
+      cardImage.alt = button.dataset.name;
+      lightbox.hidden = false;
+      document.body.classList.add('is-locked');
+      closeButton.focus();
+    }
+
+    function closeCard() {
+      if (lightbox.hidden) return;
+      lightbox.hidden = true;
+      cardImage.src = '';
+      cardImage.alt = '';
+      document.body.classList.remove('is-locked');
+      previouslyFocused?.focus();
+    }
+
+    document.querySelectorAll('.card-open').forEach((button) => {
+      button.addEventListener('click', () => openCard(button));
+    });
+
+    const savedStatuses = loadStatuses();
+    const pendingStatuses = loadPendingStatuses();
+    let isSyncing = false;
+
+    async function writeStatus(id, working) {
+      const response = await fetch(`${FIRESTORE_DOCUMENTS_URL}:commit?key=${FIRESTORE_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          writes: [{
+            update: {
+              name: `${FIRESTORE_DOCUMENT_PATH}/cardStatuses/${id}`,
+              fields: { working: { booleanValue: working } }
+            },
+            updateMask: { fieldPaths: ['working'] },
+            updateTransforms: [{
+              fieldPath: 'updatedAt',
+              setToServerValue: 'REQUEST_TIME'
+            }]
+          }]
+        })
+      });
+      if (!response.ok) throw new Error(`Firestore write failed: ${response.status}`);
+    }
+
+    async function syncPendingStatuses() {
+      if (!navigator.onLine || isSyncing) return;
+      isSyncing = true;
+      try {
+        for (const [id, working] of Object.entries({ ...pendingStatuses })) {
+          await writeStatus(id, working);
+          if (pendingStatuses[id] === working) delete pendingStatuses[id];
+          savePendingStatuses(pendingStatuses);
         }
+      } catch (error) {
+        console.error('Nepavyko sinchronizuoti kortelių būsenų:', error);
+        showConnectionStatus('Būsena bus išsaugota atkūrus ryšį');
+      } finally {
+        isSyncing = false;
+      }
+    }
 
-        function closeLightbox() {
-            lightbox.style.display = 'none';
-            lightboxImg.src = "";
-            lightboxImg.alt = "";
+    async function refreshStatuses() {
+      if (!navigator.onLine) return;
+      try {
+        const response = await fetch(`${FIRESTORE_DOCUMENTS_URL}/cardStatuses?key=${FIRESTORE_API_KEY}`, {
+          cache: 'no-store'
+        });
+        if (!response.ok) throw new Error(`Firestore read failed: ${response.status}`);
+        const data = await response.json();
+        for (const statusDocument of data.documents || []) {
+          const id = statusDocument.name.split('/').pop();
+          const working = statusDocument.fields?.working?.booleanValue;
+          const card = document.querySelector(`[data-card-id="${id}"]`);
+          if (!card || typeof working !== 'boolean' || id in pendingStatuses) continue;
+          applyStatus(card, working);
+          savedStatuses[id] = working;
         }
+        saveStatuses(savedStatuses);
+      } catch (error) {
+        console.error('Nepavyko gauti kortelių būsenų:', error);
+        showConnectionStatus('Rodomos paskutinės išsaugotos būsenos');
+      }
+    }
 
-        galleryItems.forEach(item => {
-            // Funkcija, kurią naudosime tiek click, tiek keydown eventams
-            const handleInteraction = (event) => {
-                const img = event.currentTarget.querySelector('img');
-                if (img) {
-                    // Gauname reikšmes iš data-* atributų
-                    const lightboxSrc = img.dataset.lightboxSrc;
-                    const lightboxAlt = img.dataset.lightboxAlt;
+    document.querySelectorAll('.card').forEach((card) => {
+      const id = card.dataset.cardId;
+      applyStatus(card, savedStatuses[id] !== false);
+      card.querySelector('.status-toggle').addEventListener('click', () => {
+        const working = card.dataset.working !== 'true';
+        applyStatus(card, working);
+        savedStatuses[id] = working;
+        saveStatuses(savedStatuses);
+        pendingStatuses[id] = working;
+        savePendingStatuses(pendingStatuses);
+        void syncPendingStatuses();
+      });
+    });
 
-                    // Tikriname ar radome kelią iki lightbox paveikslėlio
-                    if (lightboxSrc) {
-                        // Kviečiame openLightbox su reikšmėmis iš data-* atributų
-                        // Jei data-lightbox-alt nėra, naudojame logo alt kaip atsarginį variantą
-                        openLightbox(lightboxSrc, lightboxAlt || img.alt);
-                    } else {
-                        console.warn("Nerastas data-lightbox-src atributas ant:", img);
-                    }
-                }
-            };
+    void refreshStatuses().finally(syncPendingStatuses);
+    setInterval(refreshStatuses, 15000);
 
-            // Pelės paspaudimo klausytojas
-            item.addEventListener('click', handleInteraction);
+    closeButton.addEventListener('click', closeCard);
+    lightbox.addEventListener('click', (event) => {
+      if (event.target === lightbox) closeCard();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeCard();
+    });
 
-            // Klaviatūros paspaudimo klausytojas
-            item.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    handleInteraction(event); // Naudojame tą pačią funkciją
-                }
-            });
-        });
+    function showConnectionStatus(message) {
+      clearTimeout(statusTimer);
+      connectionStatus.textContent = message;
+      connectionStatus.hidden = false;
+      statusTimer = setTimeout(() => { connectionStatus.hidden = true; }, 3200);
+    }
 
-        // Kiti klausytojai lieka tokie patys
-        lightbox.addEventListener('click', function(event) {
-            if (event.target === lightbox) {
-                closeLightbox();
-            }
-        });
-         lightboxClose.addEventListener('click', function(event) {
-             event.stopPropagation();
-             closeLightbox();
-         });
-        lightboxContent.addEventListener('click', function(event) {
-             event.stopPropagation();
-        });
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && lightbox.style.display === 'flex') {
-                closeLightbox();
-            }
-        });
-    </script>
+    window.addEventListener('offline', () => showConnectionStatus('Veikiama be interneto'));
+    window.addEventListener('online', async () => {
+      showConnectionStatus('Interneto ryšys atkurtas');
+      await syncPendingStatuses();
+      await refreshStatuses();
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          await navigator.serviceWorker.register('./sw.js');
+        } catch (error) {
+          console.error('Nepavyko įjungti darbo be interneto:', error);
+        }
+      });
+    }
+  </script>
 </body>
 </html>
