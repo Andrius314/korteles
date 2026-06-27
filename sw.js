@@ -1,19 +1,25 @@
-const CACHE_NAME = 'nuolaidu-korteles-v4';
+const CACHE_NAME = 'nuolaidu-korteles-v5';
 const OFFLINE_ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
   './img/iki.jpg',
+  './img/iki_scan.png',
   './img/iki_logo.png',
   './img/maxima.jpg',
+  './img/maxima_scan.png',
   './img/maxima_logo.png',
   './img/lidl.jpg',
+  './img/lidl_scan.png',
   './img/lidl_logo.png',
   './img/norfa.jpg',
+  './img/norfa_scan.png',
   './img/norfa_logo.png',
   './img/promo.jpg',
+  './img/promo_scan.png',
   './img/promo_logo.png',
   './img/senukai.jpg',
+  './img/senukai_scan.png',
   './img/senukai_logo.png'
 ];
 

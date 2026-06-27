@@ -145,17 +145,17 @@
       z-index: 10;
       display: grid;
       place-items: center;
-      padding: 24px;
-      background: rgba(3, 7, 18, .86);
+      padding: 12px;
+      background: rgba(3, 7, 18, .92);
       backdrop-filter: blur(5px);
       animation: fade-in .16s ease-out;
     }
 
     .dialog {
       position: relative;
-      width: min(94vw, 850px);
-      max-height: 90vh;
-      padding: 20px;
+      width: min(98vw, 1100px);
+      max-height: 96dvh;
+      padding: 12px;
       border-radius: 18px;
       background: #fff;
       box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
@@ -164,9 +164,15 @@
     .dialog img {
       display: block;
       width: 100%;
-      max-height: calc(90vh - 40px);
+      max-height: calc(96dvh - 24px);
       object-fit: contain;
       border-radius: 10px;
+      background: #fff;
+    }
+
+    .dialog img.is-barcode {
+      height: min(42dvh, 360px);
+      object-fit: fill;
     }
 
     .close {
@@ -215,8 +221,36 @@
       .card { min-height: 125px; padding: 10px; border-radius: 14px; }
       .card-open { padding: 4px; }
       .card-open img { height: 88px; }
-      .dialog { padding: 12px; }
-      .close { top: -12px; right: -8px; }
+      .lightbox {
+        align-items: stretch;
+        padding: 0;
+        background: #fff;
+      }
+      .dialog {
+        display: grid;
+        place-items: center;
+        width: 100vw;
+        height: 100dvh;
+        max-height: none;
+        padding: calc(env(safe-area-inset-top) + 46px) 8px calc(env(safe-area-inset-bottom) + 8px);
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .dialog img {
+        width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+      }
+      .dialog img.is-barcode {
+        height: min(46dvh, 390px);
+        max-height: calc(100dvh - 64px);
+        object-fit: fill;
+      }
+      .close {
+        top: max(8px, env(safe-area-inset-top));
+        right: 8px;
+        border-color: #111827;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -232,37 +266,37 @@
 
   <main class="gallery" aria-label="Nuolaidų kortelių sąrašas">
     <article class="card" data-card-id="iki">
-      <button class="card-open" type="button" data-card="img/iki.jpg" data-name="IKI nuolaidų kortelė">
+      <button class="card-open" type="button" data-card="img/iki.jpg" data-scan="img/iki_scan.png" data-code="barcode" data-name="IKI nuolaidų kortelė">
         <img src="img/iki_logo.png" alt="IKI" width="300" height="200">
       </button>
       <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
     </article>
     <article class="card" data-card-id="maxima">
-      <button class="card-open" type="button" data-card="img/maxima.jpg" data-name="Maxima Ačiū kortelė">
+      <button class="card-open" type="button" data-card="img/maxima.jpg" data-scan="img/maxima_scan.png" data-code="barcode" data-name="Maxima Ačiū kortelė">
         <img src="img/maxima_logo.png" alt="Maxima" width="300" height="200">
       </button>
       <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
     </article>
     <article class="card" data-card-id="lidl">
-      <button class="card-open" type="button" data-card="img/lidl.jpg" data-name="Lidl Plus kortelė">
+      <button class="card-open" type="button" data-card="img/lidl.jpg" data-scan="img/lidl_scan.png" data-code="qr" data-name="Lidl Plus kortelė">
         <img src="img/lidl_logo.png" alt="Lidl" width="300" height="200">
       </button>
       <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
     </article>
     <article class="card" data-card-id="norfa">
-      <button class="card-open" type="button" data-card="img/norfa.jpg" data-name="Norfa nuolaidų kortelė">
+      <button class="card-open" type="button" data-card="img/norfa.jpg" data-scan="img/norfa_scan.png" data-code="qr" data-name="Norfa nuolaidų kortelė">
         <img src="img/norfa_logo.png" alt="Norfa" width="300" height="200">
       </button>
       <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
     </article>
     <article class="card" data-card-id="promo">
-      <button class="card-open" type="button" data-card="img/promo.jpg" data-name="Promo Cash&amp;Carry kortelė">
+      <button class="card-open" type="button" data-card="img/promo.jpg" data-scan="img/promo_scan.png" data-code="barcode" data-name="Promo Cash&amp;Carry kortelė">
         <img src="img/promo_logo.png" alt="Promo Cash&amp;Carry" width="300" height="200">
       </button>
       <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
     </article>
     <article class="card" data-card-id="senukai">
-      <button class="card-open" type="button" data-card="img/senukai.jpg" data-name="Senukai Smart Net kortelė">
+      <button class="card-open" type="button" data-card="img/senukai.jpg" data-scan="img/senukai_scan.png" data-code="barcode" data-name="Senukai Smart Net kortelė">
         <img src="img/senukai_logo.png" alt="Senukai" width="300" height="200">
       </button>
       <button class="status-toggle" type="button"><span class="status-label">Veikia</span></button>
@@ -289,6 +323,7 @@
     const connectionStatus = document.querySelector('#connection-status');
     let previouslyFocused = null;
     let statusTimer = null;
+    let wakeLock = null;
 
     const STATUS_STORAGE_KEY = 'nuolaidu-korteliu-busenos-v1';
     const PENDING_STORAGE_KEY = 'nuolaidu-korteliu-laukiantys-pakeitimai-v1';
@@ -337,11 +372,13 @@
 
     function openCard(button) {
       previouslyFocused = button;
-      cardImage.src = button.dataset.card;
+      cardImage.src = button.dataset.scan || button.dataset.card;
       cardImage.alt = button.dataset.name;
+      cardImage.classList.toggle('is-barcode', button.dataset.code === 'barcode');
       lightbox.hidden = false;
       document.body.classList.add('is-locked');
       closeButton.focus();
+      void keepScreenAwake();
     }
 
     function closeCard() {
@@ -349,8 +386,25 @@
       lightbox.hidden = true;
       cardImage.src = '';
       cardImage.alt = '';
+      cardImage.classList.remove('is-barcode');
       document.body.classList.remove('is-locked');
+      releaseWakeLock();
       previouslyFocused?.focus();
+    }
+
+    async function keepScreenAwake() {
+      if (!('wakeLock' in navigator)) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+      } catch {
+        // Jei naršyklė nepalaiko ekrano palaikymo, kortelė vis tiek rodoma įprastai.
+      }
+    }
+
+    function releaseWakeLock() {
+      if (!wakeLock) return;
+      wakeLock.release().catch(() => {});
+      wakeLock = null;
     }
 
     document.querySelectorAll('.card-open').forEach((button) => {
