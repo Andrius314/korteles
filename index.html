@@ -70,6 +70,7 @@
 
     .card-open:focus-visible,
     .status-toggle:focus-visible,
+    .variant-option:focus-visible,
     .close:focus-visible {
       outline: 3px solid #2563eb;
       outline-offset: 3px;
@@ -159,12 +160,56 @@
       border-radius: 18px;
       background: #fff;
       box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .variant-controls {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 0 42px 0 0;
+    }
+
+    .variant-option {
+      min-height: 38px;
+      padding: 8px 11px;
+      border: 1px solid rgba(17, 24, 39, .14);
+      border-radius: 999px;
+      background: #f3f4f6;
+      color: #374151;
+      font: inherit;
+      font-size: .84rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .variant-option.is-active {
+      border-color: #111827;
+      background: #111827;
+      color: #fff;
+    }
+
+    .variant-hint {
+      min-height: 1.1rem;
+      margin: -3px 42px 0 0;
+      color: #6b7280;
+      font-size: .8rem;
+      text-align: center;
+    }
+
+    .image-frame {
+      display: grid;
+      flex: 1;
+      min-height: 0;
+      place-items: center;
     }
 
     .dialog img {
       display: block;
       width: 100%;
-      max-height: calc(96dvh - 24px);
+      max-height: calc(96dvh - 92px);
       object-fit: contain;
       border-radius: 10px;
       background: #fff;
@@ -173,6 +218,12 @@
     .dialog img.is-barcode {
       height: min(42dvh, 360px);
       object-fit: fill;
+    }
+
+    .dialog img.is-landscape {
+      height: auto;
+      max-height: calc(96dvh - 92px);
+      object-fit: contain;
     }
 
     .close {
@@ -227,14 +278,29 @@
         background: #fff;
       }
       .dialog {
-        display: grid;
-        place-items: center;
         width: 100vw;
         height: 100dvh;
         max-height: none;
-        padding: calc(env(safe-area-inset-top) + 46px) 8px calc(env(safe-area-inset-bottom) + 8px);
+        padding: calc(env(safe-area-inset-top) + 50px) 8px calc(env(safe-area-inset-bottom) + 8px);
         border-radius: 0;
         box-shadow: none;
+      }
+      .variant-controls {
+        gap: 5px;
+        margin: 0 48px 0 0;
+        overflow-x: auto;
+        padding-bottom: 1px;
+        justify-content: flex-start;
+      }
+      .variant-option {
+        flex: 0 0 auto;
+        min-height: 36px;
+        padding: 8px 10px;
+        font-size: .78rem;
+      }
+      .variant-hint {
+        margin: -4px 48px 0 0;
+        font-size: .76rem;
       }
       .dialog img {
         width: 100%;
@@ -246,10 +312,32 @@
         max-height: calc(100dvh - 64px);
         object-fit: fill;
       }
+      .dialog img.is-landscape {
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
+      }
       .close {
         top: max(8px, env(safe-area-inset-top));
         right: 8px;
         border-color: #111827;
+      }
+    }
+
+    @media (max-width: 900px) and (orientation: landscape) {
+      .dialog {
+        padding: calc(env(safe-area-inset-top) + 8px) 8px calc(env(safe-area-inset-bottom) + 8px);
+      }
+      .variant-controls {
+        justify-content: center;
+      }
+      .dialog img.is-landscape {
+        width: min(100%, 1050px);
+        max-height: calc(100dvh - 92px);
+      }
+      .close {
+        top: max(8px, env(safe-area-inset-top));
+        right: 8px;
       }
     }
 
@@ -306,7 +394,15 @@
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Nuolaidų kortelė" hidden>
     <div class="dialog">
       <button class="close" type="button" aria-label="Uždaryti">&times;</button>
-      <img id="card-image" src="" alt="">
+      <div class="variant-controls" aria-label="Kortelės rodymo variantai">
+        <button class="variant-option" type="button" data-variant="original">Originalas</button>
+        <button class="variant-option" type="button" data-variant="current">Padidintas</button>
+        <button class="variant-option" type="button" data-variant="landscape">Horizontaliai</button>
+      </div>
+      <div class="variant-hint" id="variant-hint" aria-live="polite"></div>
+      <div class="image-frame">
+        <img id="card-image" src="" alt="">
+      </div>
     </div>
   </div>
 
@@ -320,8 +416,11 @@
     const lightbox = document.querySelector('#lightbox');
     const cardImage = document.querySelector('#card-image');
     const closeButton = document.querySelector('.close');
+    const variantButtons = document.querySelectorAll('.variant-option');
+    const variantHint = document.querySelector('#variant-hint');
     const connectionStatus = document.querySelector('#connection-status');
     let previouslyFocused = null;
+    let currentCardButton = null;
     let statusTimer = null;
     let wakeLock = null;
 
@@ -372,13 +471,56 @@
 
     function openCard(button) {
       previouslyFocused = button;
-      cardImage.src = button.dataset.scan || button.dataset.card;
-      cardImage.alt = button.dataset.name;
-      cardImage.classList.toggle('is-barcode', button.dataset.code === 'barcode');
+      currentCardButton = button;
+      setCardVariant('current');
       lightbox.hidden = false;
       document.body.classList.add('is-locked');
       closeButton.focus();
       void keepScreenAwake();
+    }
+
+    async function setCardVariant(variant) {
+      if (!currentCardButton) return;
+      const isBarcode = currentCardButton.dataset.code === 'barcode';
+      const isOriginal = variant === 'original';
+      const isLandscape = variant === 'landscape';
+      cardImage.src = isOriginal ? currentCardButton.dataset.card : (currentCardButton.dataset.scan || currentCardButton.dataset.card);
+      cardImage.alt = `${currentCardButton.dataset.name} - ${variantLabel(variant)}`;
+      cardImage.classList.toggle('is-barcode', isBarcode && variant === 'current');
+      cardImage.classList.toggle('is-landscape', isLandscape);
+      variantButtons.forEach((button) => {
+        const active = button.dataset.variant === variant;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      variantHint.textContent = variantHintText(variant, isBarcode);
+      if (isLandscape) await requestLandscapeView();
+    }
+
+    function variantLabel(variant) {
+      if (variant === 'original') return 'originalas';
+      if (variant === 'landscape') return 'horizontalus variantas';
+      return 'padidintas variantas';
+    }
+
+    function variantHintText(variant, isBarcode) {
+      if (variant === 'original') return 'Senas variantas: visa kortelė kaip buvo anksčiau.';
+      if (variant === 'landscape' && isBarcode) return 'Horizontaliai: pasukite telefoną šonu, kad barkodas būtų platesnis.';
+      if (variant === 'landscape') return 'Horizontaliai: QR kodui paliekamas proporcingas vaizdas.';
+      return isBarcode ? 'Dabartinis variantas: apkarpytas ir padidintas barkodas.' : 'Dabartinis variantas: apkarpytas ir padidintas QR kodas.';
+    }
+
+    async function requestLandscapeView() {
+      try {
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        }
+        if (screen.orientation?.lock) {
+          await screen.orientation.lock('landscape');
+        }
+      } catch {
+        // Dalis telefonų neleidžia svetainei automatiškai pasukti ekrano, todėl paliekame rankinį pasukimą.
+      }
     }
 
     function closeCard() {
@@ -386,9 +528,14 @@
       lightbox.hidden = true;
       cardImage.src = '';
       cardImage.alt = '';
-      cardImage.classList.remove('is-barcode');
+      cardImage.classList.remove('is-barcode', 'is-landscape');
+      variantHint.textContent = '';
+      currentCardButton = null;
       document.body.classList.remove('is-locked');
       releaseWakeLock();
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
       previouslyFocused?.focus();
     }
 
@@ -409,6 +556,12 @@
 
     document.querySelectorAll('.card-open').forEach((button) => {
       button.addEventListener('click', () => openCard(button));
+    });
+
+    variantButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        void setCardVariant(button.dataset.variant);
+      });
     });
 
     const savedStatuses = loadStatuses();

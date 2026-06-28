@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nuolaidu-korteles-v5';
+const CACHE_NAME = 'nuolaidu-korteles-v6';
 const OFFLINE_ASSETS = [
   './',
   './index.html',
